@@ -1,0 +1,176 @@
+Part 1
+
+Provide one or more Active Record queries that retrieve the requested data for each of the following:
+
+1. Find the albums recorded by the artist Queen.
+
+Artist.where("name = ?", 'Queen')
+      Artist Load (0.9ms)  SELECT  "artists".* FROM "artists" WHERE (name = 'Queen') LIMIT $1  [["LIMIT", 11]]
+    => #<ActiveRecord::Relation [
+    #<Artist id: 51, name: "Queen", created_at: "2006-01-08 22:57:01", updated_at: "2014-01-29 22:10:22">]>
+
+Album.where(artist_id: 51)
+      Album Load (1.8ms)  SELECT  "albums".* FROM "albums" WHERE "albums"."artist_id" = $1 LIMIT $2  [["artist_id", 51], ["LIMIT", 11]]
+    => #<ActiveRecord::Relation
+    [#<Album id: 36, artist_id: 51, title: "Greatest Hits II", created_at: "2008-01-30 14:00:12", updated_at: "2014-01-29 22:14:02">,
+    #<Album id: 185, artist_id: 51, title: "Greatest Hits I", created_at: "2007-12-29 12:02:13", updated_at: "2014-01-29 22:14:02">,
+    #<Album id: 186, artist_id: 51, title: "News Of The World", created_at: "2010-06-23 20:50:06", updated_at: "2014-01-29 22:14:02">]>
+
+
+
+2. Count how many tracks belong to the media type "Protected MPEG-4 video file".
+
+MediaType.where(name: 'Protected MPEG-4 video file')
+      MediaType Load (0.4ms)  SELECT  "media_types".* FROM "media_types" WHERE "media_types"."name" = $1 LIMIT $2  [["name", "Protected MPEG-4 video file"], ["LIMIT", 11]]
+    => #<ActiveRecord::Relation [#<MediaType id: 3, name: "Protected MPEG-4 video file", created_at: "2007-12-07 13:17:17", updated_at: "2014-01-29 22:14:22">]>
+    irb(main):021:0>
+
+Track.where(media_type_id: 3).count
+          (5.4ms)  SELECT COUNT(*) FROM "tracks" WHERE "tracks"."media_type_id" = $1  [["media_type_id", 3]]
+       => 214
+
+
+3. Find the genre with the name "Hip Hop/Rap".
+
+Genre.where("name = ?", 'Hip Hop/Rap')
+      Genre Load (7.5ms)  SELECT  "genres".* FROM "genres" WHERE (name = 'Hip Hop/Rap') LIMIT $1  [["LIMIT", 11]]
+    => #<ActiveRecord::Relation [#<Genre id: 17, name: "Hip Hop/Rap", created_at: "2013-01-20 02:04:31", updated_at: "2014-01-29 22:14:08">]>
+
+
+4. Count how many tracks belong to the "Hip Hop/Rap" genre
+
+Track.where(genre_id: 17).count
+       (5.3ms)  SELECT COUNT(*) FROM "tracks" WHERE "tracks"."genre_id" = $1  [["genre_id", 17]]
+    => 35
+
+
+5. Find the total amount of time required to listen to all the tracks in the database.
+
+Track.sum(:milliseconds)
+       (84.9ms)  SELECT SUM("tracks"."milliseconds") FROM "tracks"
+    => 1378575827
+
+
+6. Find the highest price of any track that has the media type "MPEG audio file".
+
+MediaType.where(name: 'MPEG audio file')
+      MediaType Load (69.3ms)  SELECT  "media_types".* FROM "media_types" WHERE "media_types"."name" = $1 LIMIT $2  [["name", "MPEG audio file"], ["LIMIT", 11]]
+    => #<ActiveRecord::Relation [#<MediaType id: 1, name: "MPEG audio file", created_at: "2006-11-24 08:21:33", updated_at: "2014-01-29 22:14:22">]>
+
+Track.where(media_type_id: 1).order(unit_price: :desc).first
+        Track Load (4.2ms)  SELECT  "tracks".* FROM "tracks" WHERE "tracks"."media_type_id" = $1 ORDER BY "tracks"."unit_price" DESC LIMIT $2  [["media_type_id", 1], ["LIMIT", 1]]
+    => #<Track id: 6, album_id: 1, genre_id: 1, media_type_id: 1, name: "Put The Finger On You", composer: "Angus Young, Malcolm Young, Brian Johnson", milliseconds: 205662, bytes: 6713451, unit_price: 0.99e0, created_at: "2005-01-03 05:49:26", updated_at: "2014-01-29 22:14:56">
+    irb(main):035:0>
+
+
+7. Find the name of the most expensive track that has the media type "MPEG audio file".
+
+MediaType.where(name: 'MPEG audio file')
+      MediaType Load (69.3ms)  SELECT  "media_types".* FROM "media_types" WHERE "media_types"."name" = $1 LIMIT $2  [["name", "MPEG audio file"], ["LIMIT", 11]]
+    => #<ActiveRecord::Relation [#<MediaType id: 1, name: "MPEG audio file", created_at: "2006-11-24 08:21:33", updated_at: "2014-01-29 22:14:22">]>
+
+Track.where(media_type_id: 1).order(unit_price: :desc).first.name
+      Track Load (28.8ms)  SELECT  "tracks".* FROM "tracks" WHERE "tracks"."media_type_id" = $1 ORDER BY "tracks"."unit_price" DESC LIMIT $2  [["media_type_id", 1], ["LIMIT", 1]]
+    => "Put The Finger On You"
+    irb(main):040:0>
+
+
+8. Find the 2 oldest artists.
+
+Artist.order(created_at: :asc).limit(2)
+      Artist Load (4.4ms)  SELECT  "artists".* FROM "artists" ORDER BY "artists"."created_at" ASC LIMIT $1  [["LIMIT", 2]]
+      => #<ActiveRecord::Relation
+      [#<Artist id: 258, name: "Les Arts Florissants & William Christie", created_at: "2004-02-13 06:08:36", updated_at: "2014-01-29 22:10:22">, #<Artist id: 31, name: "Baby Consuelo", created_at: "2004-02-16 22:04:39", updated_at: "2014-01-29 22:10:22">]>
+
+
+
+9. Find the least expensive track that has the genre "Electronica/Dance".
+
+Genre.where(name: 'Electronica/Dance')
+      Genre Load (18.9ms)  SELECT  "genres".* FROM "genres" WHERE "genres"."name" = $1 LIMIT $2  [["name", "Electronica/Dance"], ["LIMIT", 11]]
+    => #<ActiveRecord::Relation [#<Genre id: 15, name: "Electronica/Dance", created_at: "2008-05-25 12:13:42", updated_at: "2014-01-29 22:14:08">]>
+
+Track.where(genre_id: 15).order(unit_price: :asc).limit(1)
+      Track Load (8.5ms)  SELECT  "tracks".* FROM "tracks" WHERE "tracks"."genre_id" = $1 ORDER BY "tracks"."unit_price" ASC LIMIT $2  [["genre_id", 15], ["LIMIT", 1]]
+    => #<ActiveRecord::Relation [#<Track id: 3319, album_id: 259, genre_id: 15, media_type_id: 1, name: "Instinto Colectivo", composer: nil, milliseconds: 300564, bytes: 12024875, unit_price: 0.99e0, created_at: "2004-09-27 22:40:29", updated_at: "2014-01-29 22:15:04">]>
+
+
+10. Find all "MPEG audio file" tracks in the genre "Electronica/Dance".
+
+Genre.where(name: 'Electronica/Dance')   [genre_id = 15]
+MediaType.where(name: 'MPEG audio file')  [media_type_id = 1]
+
+Track.where(media_type_id: 1, genre_id: 15)
+        Track Load (10.7ms)  SELECT  "tracks".* FROM "tracks" WHERE "tracks"."media_type_id" = $1 AND "tracks"."genre_id" = $2 LIMIT $3  [["media_type_id", 1], ["genre_id", 15], ["LIMIT", 11]]
+      => #<ActiveRecord::Relation
+      [#<Track id: 3319, album_id: 259, genre_id: 15, media_type_id: 1, name: "Instinto Colectivo", composer: nil, milliseconds: 300564, bytes: 12024875, unit_price: 0.99e0, created_at: "2004-09-27 22:40:29", updated_at: "2014-01-29 22:15:04">,
+      #<Track id: 3320, album_id: 259, genre_id: 15, media_type_id: 1, name: "Chapa o Coco", composer: nil, milliseconds: 143830, bytes: 5755478, unit_price: 0.99e0, created_at: "2004-09-27 22:40:29", updated_at: "2014-01-29 22:15:04">,
+      #<Track id: 3321, album_id: 259, genre_id: 15, media_type_id: 1, name: "Prostituta", composer: nil, milliseconds: 359000, bytes: 14362307, unit_price: 0.99e0, created_at: "2004-09-27 22:40:29", updated_at: "2014-01-29 22:15:04">,
+      #<Track id: 3322, album_id: 259, genre_id: 15, media_type_id: 1, name: "Eu So Queria Sumir", composer: nil, milliseconds: 269740, bytes: 10791921, unit_price: 0.99e0, created_at: "2004-09-27 22:40:29", updated_at: "2014-01-29 22:15:04">,
+      #<Track id: 3323, album_id: 259, genre_id: 15, media_type_id: 1, name: "Tres Reis", composer: nil, milliseconds: 304143, bytes: 12168015, unit_price: 0.99e0, created_at: "2004-09-27 22:40:29", updated_at: "2014-01-29 22:15:04">,
+      #<Track id: 3324, album_id: 259, genre_id: 15, media_type_id: 1, name: "Um Lugar ao Sol", composer: nil, milliseconds: 212323, bytes: 8495217, unit_price: 0.99e0, created_at: "2004-09-27 22:40:29", updated_at: "2014-01-29 22:15:04">,
+      #<Track id: 3325, album_id: 259, genre_id: 15, media_type_id: 1, name: "Batalha Naval", composer: nil, milliseconds: 285727, bytes: 11431382, unit_price: 0.99e0, created_at: "2004-09-27 22:40:29", updated_at: "2014-01-29 22:15:04">,
+      #<Track id: 3327, album_id: 259, genre_id: 15, media_type_id: 1, name: "O Misterio do Samba", composer: nil, milliseconds: 226142, bytes: 9047970, unit_price: 0.99e0, created_at: "2004-09-27 22:40:29", updated_at: "2014-01-29 22:15:04">,
+      #<Track id: 3328, album_id: 259, genre_id: 15, media_type_id: 1, name: "Armadura", composer: nil, milliseconds: 232881, bytes: 9317533, unit_price: 0.99e0, created_at: "2004-09-27 22:40:29", updated_at: "2014-01-29 22:15:04">,
+      #<Track id: 3329, album_id: 259, genre_id: 15, media_type_id: 1, name: "Na Ladeira", composer: nil, milliseconds: 221570, bytes: 8865099, unit_price: 0.99e0, created_at: "2004-09-27 22:40:29", updated_at: "2014-01-29 22:15:04">, ...]>
+
+      Track.where(media_type_id: 1, genre_id: 15).count
+         (40.7ms)  SELECT COUNT(*) FROM "tracks" WHERE "tracks"."media_type_id" = $1 AND "tracks"."genre_id" = $2  [["media_type_id", 1], ["genre_id", 15]]
+      => 28
+
+
+Stretch: More Active Record Query Interface
+
+1. Find all the albums whose titles start with B.
+
+Album.where("title LIKE 'B%'")
+      Album Load (38.7ms)  SELECT  "albums".* FROM "albums" WHERE (title LIKE 'B%') LIMIT $1  [["LIMIT", 11]]
+    => #<ActiveRecord::Relation
+    [#<Album id: 5, artist_id: 3, title: "Big Ones", created_at: "2012-06-22 01:05:10", updated_at: "2014-01-29 22:14:02">,
+    #<Album id: 16, artist_id: 12, title: "Black Sabbath", created_at: "2011-05-06 07:06:52", updated_at: "2014-01-29 22:14:02">,
+    #<Album id: 17, artist_id: 12, title: "Black Sabbath Vol. 4 (Remaster)", created_at: "2007-10-11 08:05:23", updated_at: "2014-01-29 22:14:02">, #<Album id: 18, artist_id: 13, title: "Body Count", created_at: "2007-02-08 22:32:53", updated_at: "2014-01-29 22:14:02">,
+    #<Album id: 31, artist_id: 23, title: "Bongo Fury", created_at: "2013-11-04 07:50:09", updated_at: "2014-01-29 22:14:02">, #<Album id: 93, artist_id: 89, title: "Blue Moods", created_at: "2005-10-19 01:18:51", updated_at: "2014-01-29 22:14:02">,
+    #<Album id: 127, artist_id: 22, title: "BBC Sessions [Disc 2] [Live]", created_at: "2010-07-04 10:45:46", updated_at: "2014-01-29 22:14:02">, #<Album id: 2, artist_id: 2, title: "Balls to the Wall", created_at: "2013-09-01 09:10:31", updated_at: "2014-01-29 22:14:02">,
+    #<Album id: 145, artist_id: 103, title: "Barulhinho Bom", created_at: "2013-11-24 13:30:55", updated_at: "2014-01-29 22:14:02">, #<Album id: 148, artist_id: 50, title: "Black albums", created_at: "2005-04-22 22:31:52", updated_at: "2014-01-29 22:14:02">, ...]>
+    irb(main):051:0>
+
+
+2. Find the all the artists whose names start with A.
+
+Artist.where("name LIKE 'A%'")
+  Artist Load (15.1ms)  SELECT  "artists".* FROM "artists" WHERE (name LIKE 'A%') LIMIT $1  [["LIMIT", 11]]
+      => #<ActiveRecord::Relation
+      [#<Artist id: 3, name: "Aerosmith", created_at: "2010-04-24 12:10:27", updated_at: "2014-01-29 22:10:22">,
+      #<Artist id: 5, name: "Alice In Chains", created_at: "2010-03-17 04:57:44", updated_at: "2014-01-29 22:10:22">,
+      #<Artist id: 6, name: "Antônio Carlos Jobim", created_at: "2008-02-20 09:42:01", updated_at: "2014-01-29 22:10:22">,
+      #<Artist id: 7, name: "Apocalyptica", created_at: "2007-06-17 17:22:03", updated_at: "2014-01-29 22:10:22">,
+      #<Artist id: 26, name: "Azymuth", created_at: "2011-07-06 01:06:45", updated_at: "2014-01-29 22:10:22">,
+      #<Artist id: 159, name: "Aquaman", created_at: "2010-01-26 04:30:22", updated_at: "2014-01-29 22:10:22">,
+      #<Artist id: 1, name: "AC/DC", created_at: "2013-12-29 10:17:33", updated_at: "2014-01-29 22:10:22">,
+      #<Artist id: 4, name: "Alanis Morissette", created_at: "2006-06-15 08:38:37", updated_at: "2014-01-29 22:10:22">,
+      #<Artist id: 8, name: "Audioslave", created_at: "2005-10-31 17:39:42", updated_at: "2014-01-29 22:10:22">,
+      #<Artist id: 166, name: "Avril Lavigne", created_at: "2011-07-20 07:13:19", updated_at: "2014-01-29 22:10:22">, ...]>
+
+
+Stretch: Querying the Chinook Database using SQL
+
+psql
+
+From the command line,run:
+
+psql chinook_development
+To quit, type ctrl + d.
+
+Check out W3Schools' SQL Reference as a reference, and don't forget to end each SQL statement with a semicolon (;).
+
+Write one or more SQL queries to retrieve the requested data for each of the following:
+
+1. Find the albums recorded by the artist Queen.
+
+2. Count how many tracks belong to the media type "Protected MPEG-4 video file".
+
+3. Find the least expensive track that has the genre "Electronica/Dance".
+
+4. Find the all the artists whose names start with A.
+
+5. Find all the tracks that belong to playlist 1.
